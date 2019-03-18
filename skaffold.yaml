@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/alphabettispaghetti/pipieboy:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/alphabettispaghetti/pipieboy:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: pipieboy
+        chartPath: charts/pipieboy
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/alphabettispaghetti/pipieboy'
+          image.tag: '{{.DIGEST_HEX}}'
